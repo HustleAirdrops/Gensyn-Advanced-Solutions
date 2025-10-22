@@ -591,50 +591,31 @@ update_node() {
     show_header
     echo -e "${CYAN}${BOLD}INSTALLATION${NC}"
     echo -e "${YELLOW}===============================================================================${NC}"
+
+    echo -e "${GREEN}${BOLD}Updating node files from Git repository...${NC}"
     
-    echo -e "\n${CYAN}Auto-login configuration:${NC}"
-    echo "Preserve login data between sessions? (recommended for auto-login)"
-    read -p "${BOLD}Enable auto-login? [Y/n]: ${NC}" auto_login
+    if [ -d "$SWARM_DIR/.git" ]; then
+        cd "$SWARM_DIR" || { echo -e "${RED}Failed to change directory to $SWARM_DIR${NC}"; return; }
 
-    KEEP_TEMP_DATA=$([[ "$auto_login" =~ ^[Nn]$ ]] && echo "false" || echo "true")
-    export KEEP_TEMP_DATA
+        # Remove old virtual environment
+        if [ -d ".venv" ]; then
+            echo -e "${YELLOW}Removing old virtual environment (.venv)...${NC}"
+            rm -rf .venv
+        fi
 
-    if [ -f "$SWARM_DIR/swarm.pem" ]; then
-        echo -e "\n${YELLOW}⚠️ Existing swarm.pem detected in SWARM_DIR! Keeping and using existing Swarm.pem.${NC}"
-        sudo cp "$SWARM_DIR/swarm.pem" "$HOME/swarm.pem"
-        log "INFO" "PEM copied from SWARM_DIR to HOME"
+        # Pull latest changes
+        echo -e "${YELLOW}Pulling latest updates from Git...${NC}"
+        git pull
+        echo -e "${GREEN}Repository successfully updated!${NC}"
+    else
+        echo -e "${RED}$SWARM_DIR is not a git repository.${NC}"
     fi
 
-    echo -e "\n${YELLOW}Starting installation...${NC}"
-
-    spinner() {
-        local pid=$1
-        local msg="$2"
-        local spinstr="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
-        while kill -0 "$pid" 2>/dev/null; do
-            for (( i=0; i<${#spinstr}; i++ )); do
-                printf "\r$msg ${spinstr:$i:1} "
-                sleep 0.15
-            done
-        done
-        printf "\r$msg ✅ Done"; tput el; echo
-    }
-
-    ( install_deps ) & spinner $! "📦 Installing dependencies"
-    ( clone_repo ) & spinner $! "📥 Cloning repo"
-    ( modify_run_script ) & spinner $! "🧠 Modifying run script"
-
-    if [ -f "$HOME/swarm.pem" ]; then
-        sudo cp "$HOME/swarm.pem" "$SWARM_DIR/swarm.pem"
-        sudo chmod 600 "$SWARM_DIR/swarm.pem"
-    fi
-
-    echo -e "\n${GREEN}✅ Installation completed!${NC}"
-    echo -e "Auto-login: ${GREEN}$([ "$KEEP_TEMP_DATA" == "true" ] && echo "ENABLED" || echo "DISABLED")${NC}"
     echo -e "${YELLOW}${BOLD}👉 Press Enter to return to the menu...${NC}"
     read
     sleep 1
 }
+
 
 # Reset Peer ID
 reset_peer() {
