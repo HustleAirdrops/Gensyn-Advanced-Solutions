@@ -59,8 +59,8 @@ need_cmd() {
 ensure_pkg() {
   if ! need_cmd "$1"; then
     echo_yel ">> Installing $1..."
-    apt-get update -y >/dev/null 2>&1 || true
-    DEBIAN_FRONTEND=noninteractive apt-get install -y "$1"
+    sudo apt-get update -y >/dev/null 2>&1 || true
+    DEBIAN_FRONTEND=noninteractive sudo apt-get install -y "$1"
   fi
 }
 
@@ -240,7 +240,7 @@ install_python_reqs() {
   
   if ! $PY -m pip --version &>/dev/null; then
     echo_red ">> pip not found, installing..."
-    apt-get install -y python3-pip
+    sudo apt-get install -y python3-pip
   fi
   
   if ! $PY -m pip install --upgrade pip 2>&1 | tee -a "$LOG_DIR/python_deps.log"; then
