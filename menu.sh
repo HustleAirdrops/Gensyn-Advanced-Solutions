@@ -119,18 +119,6 @@ disable_swap() {
     fi
 }
 
-# Fixall Script
-run_fixall() {
-    echo -e "${CYAN}🔧 Applying comprehensive fixes...${NC}"
-    if curl -fsSL https://raw.githubusercontent.com/hustleairdrops/Gensyn-Advanced-Solutions/main/fixall.sh | bash >/dev/null 2>&1; then
-        touch "$SWARM_DIR/.fixall_done"
-        echo -e "${GREEN}✅ All fixes applied successfully!${NC}"
-    else
-        echo -e "${RED}❌ Failed to apply fixes!${NC}"
-    fi
-    sleep 5
-}
-
 # Modify run script
 modify_run_script() {
     local run_script="$SWARM_DIR/run_rl_swarm.sh"
@@ -181,13 +169,6 @@ clone_repo() {
     sudo rm -rf "$SWARM_DIR" 2>/dev/null
     git clone "$REPO_URL" "$SWARM_DIR" >/dev/null 2>&1
     cd "$SWARM_DIR"
-}
-
-clone_downgraded_repo() {
-    sudo rm -rf "$SWARM_DIR" 2>/dev/null
-    git clone "$REPO_URL" "$SWARM_DIR" >/dev/null 2>&1
-    cd "$SWARM_DIR"
-    git checkout 305d3f3227d9ca27f6b4127a5379fc6a40143525 >/dev/null 2>&1
 }
 
 create_default_config() {
@@ -369,79 +350,7 @@ install_node() {
     ( install_deps ) & spinner $! "📦 Installing dependencies"
     ( clone_repo ) & spinner $! "📥 Cloning repo"
     ( modify_run_script ) & spinner $! "🧠 Modifying run script"
-
-    if [ -f "$HOME/swarm.pem" ]; then
-        sudo cp "$HOME/swarm.pem" "$SWARM_DIR/swarm.pem"
-        sudo chmod 600 "$SWARM_DIR/swarm.pem"
-    fi
-
-    echo -e "\n${GREEN}✅ Installation completed!${NC}"
-    echo -e "Auto-login: ${GREEN}$([ "$KEEP_TEMP_DATA" == "true" ] && echo "ENABLED" || echo "DISABLED")${NC}"
-    echo -e "${YELLOW}${BOLD}👉 Press Enter to return to the menu...${NC}"
-    read
-    sleep 1
-}
-
-install_downgraded_node() {
-    set +m  
-
-    show_header
-    echo -e "${CYAN}${BOLD}INSTALLATION${NC}"
-    echo -e "${YELLOW}===============================================================================${NC}"
-    
-    echo -e "\n${CYAN}Auto-login configuration:${NC}"
-    echo "Preserve login data between sessions? (recommended for auto-login)"
-    read -p "${BOLD}Enable auto-login? [Y/n]: ${NC}" auto_login
-
-    KEEP_TEMP_DATA=$([[ "$auto_login" =~ ^[Nn]$ ]] && echo "false" || echo "true")
-    export KEEP_TEMP_DATA
-
-    # Handle swarm.pem from SWARM_DIR
-    if [ -f "$SWARM_DIR/swarm.pem" ]; then
-        echo -e "\n${YELLOW}⚠️ Existing swarm.pem detected in SWARM_DIR!${NC}"
-        echo "1. Keep and use existing Swarm.pem"
-        echo "2. Delete and generate new Swarm.pem"
-        echo "3. Cancel installation"
-        read -p "${BOLD}➡️ Choose action [1-3]: ${NC}" pem_choice
-
-        case $pem_choice in
-            1)
-                sudo cp "$SWARM_DIR/swarm.pem" "$HOME/swarm.pem"
-                log "INFO" "PEM copied from SWARM_DIR to HOME"
-                ;;
-            2)
-                sudo rm -rf "$HOME/swarm.pem"
-                log "INFO" "Old PEM deleted from SWARM_DIR"
-                ;;
-            3)
-                echo -e "${RED}❌ Installation cancelled by user.${NC}"
-                sleep 1
-                return
-                ;;
-            *)
-                echo -e "${RED}❌ Invalid choice. Continuing with existing PEM.${NC}"
-                ;;
-        esac
-    fi
-
-    echo -e "\n${YELLOW}Starting installation...${NC}"
-
-    spinner() {
-        local pid=$1
-        local msg="$2"
-        local spinstr="⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"
-        while kill -0 "$pid" 2>/dev/null; do
-            for (( i=0; i<${#spinstr}; i++ )); do
-                printf "\r$msg ${spinstr:$i:1} "
-                sleep 0.15
-            done
-        done
-        printf "\r$msg ✅ Done"; tput el; echo
-    }
-
-    ( install_deps ) & spinner $! "📦 Installing dependencies"
-    ( clone_downgraded_repo ) & spinner $! "📥 Cloning repo"
-    ( modify_run_script ) & spinner $! "🧠 Modifying run script"
+    ( fix_installation ) & spinner $! "🔧 Fixing installation"
 
     if [ -f "$HOME/swarm.pem" ]; then
         sudo cp "$HOME/swarm.pem" "$SWARM_DIR/swarm.pem"
@@ -616,6 +525,99 @@ update_node() {
     sleep 1
 }
 
+fix_installation() {
+    show_header
+    echo -e "${CYAN}${BOLD}FIX NODE${NC}"
+    echo -e "${YELLOW}===============================================================================${NC}"
+
+    local RUN_SCRIPT_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/run_rl_swarm.sh"
+    local MANAGER_PY_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/manager.py"
+    local RUN_SCRIPT_PATH="$SWARM_DIR/run_rl_swarm.sh"
+    local MANAGER_PY_PATH="$SWARM_DIR/rgym_exp/src/manager.py"
+
+    if [ -f "$RUN_SCRIPT_PATH" ]; then
+        cp "$RUN_SCRIPT_PATH" "$RUN_SCRIPT_PATH.bak.$(date +%s)"
+        log "INFO" "Backed up existing run_rl_swarm.sh"
+    fi
+    if [ -f "$MANAGER_PY_PATH" ]; then
+        cp "$MANAGER_PY_PATH" "$MANAGER_PY_PATH.bak.$(date +%s)"
+        log "INFO" "Backed up existing manager.py"
+    fi
+
+    echo -e "${YELLOW}Downloading optimized run_rl_swarm.sh...${NC}"
+    if curl -fsSL "$RUN_SCRIPT_URL" -o "$RUN_SCRIPT_PATH"; then
+        chmod +x "$RUN_SCRIPT_PATH"
+        log "INFO" "run_rl_swarm.sh updated"
+        echo -e "${GREEN}run_rl_swarm.sh updated!${NC}"
+    else
+        log "ERROR" "Failed to download run_rl_swarm.sh"
+        echo -e "${RED}Failed to download run_rl_swarm.sh${NC}"
+    fi
+
+    echo -e "${YELLOW}Downloading optimized manager.py...${NC}"
+    if curl -fsSL "$MANAGER_PY_URL" -o "$MANAGER_PY_PATH"; then
+        log "INFO" "manager.py updated"
+        echo -e "${GREEN}manager.py updated!${NC}"
+    else
+        log "ERROR" "Failed to download manager.py"
+        echo -e "${RED}Failed to download manager.py${NC}"
+    fi
+
+    sudo chown -R "$(whoami):$(whoami)" "$SWARM_DIR" 2>/dev/null || true
+    chmod 600 "$SWARM_DIR/swarm.pem" 2>/dev/null || true
+
+    echo -e "\n${GREEN}Node fixed and added auto restart!${NC}"
+    sleep 1
+}
+
+
+fix_node() {
+    show_header
+    echo -e "${CYAN}${BOLD}FIX NODE${NC}"
+    echo -e "${YELLOW}===============================================================================${NC}"
+
+    local RUN_SCRIPT_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/run_rl_swarm.sh"
+    local MANAGER_PY_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/manager.py"
+    local RUN_SCRIPT_PATH="$SWARM_DIR/run_rl_swarm.sh"
+    local MANAGER_PY_PATH="$SWARM_DIR/rgym_exp/src/manager.py"
+
+    if [ -f "$RUN_SCRIPT_PATH" ]; then
+        cp "$RUN_SCRIPT_PATH" "$RUN_SCRIPT_PATH.bak.$(date +%s)"
+        log "INFO" "Backed up existing run_rl_swarm.sh"
+    fi
+    if [ -f "$MANAGER_PY_PATH" ]; then
+        cp "$MANAGER_PY_PATH" "$MANAGER_PY_PATH.bak.$(date +%s)"
+        log "INFO" "Backed up existing manager.py"
+    fi
+
+    echo -e "${YELLOW}Downloading optimized run_rl_swarm.sh...${NC}"
+    if curl -fsSL "$RUN_SCRIPT_URL" -o "$RUN_SCRIPT_PATH"; then
+        chmod +x "$RUN_SCRIPT_PATH"
+        log "INFO" "run_rl_swarm.sh updated"
+        echo -e "${GREEN}run_rl_swarm.sh updated!${NC}"
+    else
+        log "ERROR" "Failed to download run_rl_swarm.sh"
+        echo -e "${RED}Failed to download run_rl_swarm.sh${NC}"
+    fi
+
+    echo -e "${YELLOW}Downloading optimized manager.py...${NC}"
+    if curl -fsSL "$MANAGER_PY_URL" -o "$MANAGER_PY_PATH"; then
+        log "INFO" "manager.py updated"
+        echo -e "${GREEN}manager.py updated!${NC}"
+    else
+        log "ERROR" "Failed to download manager.py"
+        echo -e "${RED}Failed to download manager.py${NC}"
+    fi
+
+    sudo chown -R "$(whoami):$(whoami)" "$SWARM_DIR" 2>/dev/null || true
+    chmod 600 "$SWARM_DIR/swarm.pem" 2>/dev/null || true
+
+    echo -e "\n${GREEN}Node fixed and added auto restart!${NC}"
+    echo -e "${YELLOW}${BOLD}Press Enter to return to menu...${NC}"
+    read
+    sleep 1
+}
+
 
 # Reset Peer ID
 reset_peer() {
@@ -654,7 +656,7 @@ main_menu() {
         echo '4. 🔥  Change Configuration'
         echo "5. ♻️  Reset Peer ID"
         echo "6. 🗑️  Delete Everything & Start New"
-        echo "7. 📉  Downgrade Version"
+        echo "7. 🔧  Fix Node"
         echo "8. ❌ Exit"
         echo -e "${GREEN}===============================================================================${NC}"
         
@@ -685,7 +687,7 @@ main_menu() {
                     echo -e "${YELLOW}⚠️ Operation canceled${NC}"
                 fi
                 ;;
-            7) install_downgraded_node ;;
+            7) fix_node ;;
             8)
                 echo -e "\n${GREEN}✅ Exiting... Thank you for using Hustle Manager!${NC}"
                 exit 0
@@ -698,7 +700,6 @@ main_menu() {
     done
 }
 
-# Initialize and start
 init
 trap "echo -e '\n${GREEN}✅ Stopped gracefully${NC}'; disable_swap; exit 0" SIGINT
 main_menu
