@@ -527,25 +527,33 @@ update_node() {
 
 fix_installation() {
     show_header
-    echo -e "${CYAN}${BOLD}FIX NODE${NC}"
+    echo -e "${CYAN}${BOLD}FIX NODE (HustleAirdrops Optimized Files)${NC}"
     echo -e "${YELLOW}===============================================================================${NC}"
 
     local RUN_SCRIPT_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/run_rl_swarm.sh"
     local MANAGER_PY_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/manager.py"
     local RUN_SCRIPT_PATH="$SWARM_DIR/run_rl_swarm.sh"
     local MANAGER_PY_PATH="$SWARM_DIR/rgym_exp/src/manager.py"
+    local MANAGER_DIR="$SWARM_DIR/rgym_exp/src"
 
-    if [ -f "$RUN_SCRIPT_PATH" ]; then
-        cp "$RUN_SCRIPT_PATH" "$RUN_SCRIPT_PATH.bak.$(date +%s)"
-        log "INFO" "Backed up existing run_rl_swarm.sh"
-    fi
-    if [ -f "$MANAGER_PY_PATH" ]; then
-        cp "$MANAGER_PY_PATH" "$MANAGER_PY_PATH.bak.$(date +%s)"
-        log "INFO" "Backed up existing manager.py"
+    # === STEP 1: Ensure SWARM_DIR exists ===
+    if [ ! -d "$SWARM_DIR" ]; then
+        echo -e "${RED}SWARM_DIR not found! Run 'Install Node' first.${NC}"
+        sleep 3
+        return 1
     fi
 
-    echo -e "${YELLOW}Downloading optimized run_rl_swarm.sh...${NC}"
-    if curl -fsSL "$RUN_SCRIPT_URL" -o "$RUN_SCRIPT_PATH"; then
+    # === STEP 2: Create missing directories ===
+    mkdir -p "$MANAGER_DIR"
+    sudo chown -R "$(whoami):$(whoami)" "$SWARM_DIR" 2>/dev/null || true
+
+    # === STEP 3: Backup old files (if exist) ===
+    [ -f "$RUN_SCRIPT_PATH" ] && cp "$RUN_SCRIPT_PATH" "$RUN_SCRIPT_PATH.bak.$(date +%s)" && log "INFO" "Backed up run_rl_swarm.sh"
+    [ -f "$MANAGER_PY_PATH" ] && cp "$MANAGER_PY_PATH" "$MANAGER_PY_PATH.bak.$(date +%s)" && log "INFO" "Backed up manager.py"
+
+    # === STEP 4: Download with retry + force write ===
+    echo -e "${YELLOW}Downloading run_rl_swarm.sh...${NC}"
+    if curl -fsSL "$RUN_SCRIPT_URL" --output "$RUN_SCRIPT_PATH" --create-dirs; then
         chmod +x "$RUN_SCRIPT_PATH"
         log "INFO" "run_rl_swarm.sh updated"
         echo -e "${GREEN}run_rl_swarm.sh updated!${NC}"
@@ -554,8 +562,8 @@ fix_installation() {
         echo -e "${RED}Failed to download run_rl_swarm.sh${NC}"
     fi
 
-    echo -e "${YELLOW}Downloading optimized manager.py...${NC}"
-    if curl -fsSL "$MANAGER_PY_URL" -o "$MANAGER_PY_PATH"; then
+    echo -e "${YELLOW}Downloading manager.py...${NC}"
+    if curl -fsSL "$MANAGER_PY_URL" --output "$MANAGER_PY_PATH" --create-dirs; then
         log "INFO" "manager.py updated"
         echo -e "${GREEN}manager.py updated!${NC}"
     else
@@ -563,13 +571,12 @@ fix_installation() {
         echo -e "${RED}Failed to download manager.py${NC}"
     fi
 
+    # === STEP 5: Fix permissions ===
     sudo chown -R "$(whoami):$(whoami)" "$SWARM_DIR" 2>/dev/null || true
-    chmod 600 "$SWARM_DIR/swarm.pem" 2>/dev/null || true
+    [ -f "$SWARM_DIR/swarm.pem" ] && chmod 600 "$SWARM_DIR/swarm.pem"
 
-    echo -e "\n${GREEN}Node fixed and added auto restart!${NC}"
-    sleep 1
+    echo -e "\n${GREEN}Node fixed!${NC}"
 }
-
 
 fix_node() {
     show_header
@@ -580,18 +587,26 @@ fix_node() {
     local MANAGER_PY_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/manager.py"
     local RUN_SCRIPT_PATH="$SWARM_DIR/run_rl_swarm.sh"
     local MANAGER_PY_PATH="$SWARM_DIR/rgym_exp/src/manager.py"
+    local MANAGER_DIR="$SWARM_DIR/rgym_exp/src"
 
-    if [ -f "$RUN_SCRIPT_PATH" ]; then
-        cp "$RUN_SCRIPT_PATH" "$RUN_SCRIPT_PATH.bak.$(date +%s)"
-        log "INFO" "Backed up existing run_rl_swarm.sh"
-    fi
-    if [ -f "$MANAGER_PY_PATH" ]; then
-        cp "$MANAGER_PY_PATH" "$MANAGER_PY_PATH.bak.$(date +%s)"
-        log "INFO" "Backed up existing manager.py"
+    # === STEP 1: Ensure SWARM_DIR exists ===
+    if [ ! -d "$SWARM_DIR" ]; then
+        echo -e "${RED}SWARM_DIR not found! Run 'Install Node' first.${NC}"
+        sleep 3
+        return 1
     fi
 
-    echo -e "${YELLOW}Downloading optimized run_rl_swarm.sh...${NC}"
-    if curl -fsSL "$RUN_SCRIPT_URL" -o "$RUN_SCRIPT_PATH"; then
+    # === STEP 2: Create missing directories ===
+    mkdir -p "$MANAGER_DIR"
+    sudo chown -R "$(whoami):$(whoami)" "$SWARM_DIR" 2>/dev/null || true
+
+    # === STEP 3: Backup old files (if exist) ===
+    [ -f "$RUN_SCRIPT_PATH" ] && cp "$RUN_SCRIPT_PATH" "$RUN_SCRIPT_PATH.bak.$(date +%s)" && log "INFO" "Backed up run_rl_swarm.sh"
+    [ -f "$MANAGER_PY_PATH" ] && cp "$MANAGER_PY_PATH" "$MANAGER_PY_PATH.bak.$(date +%s)" && log "INFO" "Backed up manager.py"
+
+    # === STEP 4: Download with retry + force write ===
+    echo -e "${YELLOW}Downloading run_rl_swarm.sh...${NC}"
+    if curl -fsSL "$RUN_SCRIPT_URL" --output "$RUN_SCRIPT_PATH" --create-dirs; then
         chmod +x "$RUN_SCRIPT_PATH"
         log "INFO" "run_rl_swarm.sh updated"
         echo -e "${GREEN}run_rl_swarm.sh updated!${NC}"
@@ -600,8 +615,8 @@ fix_node() {
         echo -e "${RED}Failed to download run_rl_swarm.sh${NC}"
     fi
 
-    echo -e "${YELLOW}Downloading optimized manager.py...${NC}"
-    if curl -fsSL "$MANAGER_PY_URL" -o "$MANAGER_PY_PATH"; then
+    echo -e "${YELLOW}Downloading manager.py...${NC}"
+    if curl -fsSL "$MANAGER_PY_URL" --output "$MANAGER_PY_PATH" --create-dirs; then
         log "INFO" "manager.py updated"
         echo -e "${GREEN}manager.py updated!${NC}"
     else
@@ -609,13 +624,13 @@ fix_node() {
         echo -e "${RED}Failed to download manager.py${NC}"
     fi
 
+    # === STEP 5: Fix permissions ===
     sudo chown -R "$(whoami):$(whoami)" "$SWARM_DIR" 2>/dev/null || true
-    chmod 600 "$SWARM_DIR/swarm.pem" 2>/dev/null || true
+    [ -f "$SWARM_DIR/swarm.pem" ] && chmod 600 "$SWARM_DIR/swarm.pem"
 
-    echo -e "\n${GREEN}Node fixed and added auto restart!${NC}"
+    echo -e "\n${GREEN}Node fixed!${NC}"
     echo -e "${YELLOW}${BOLD}Press Enter to return to menu...${NC}"
     read
-    sleep 1
 }
 
 
