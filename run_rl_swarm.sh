@@ -113,7 +113,7 @@ start_modal_login() {
   yarn install --immutable | tee "$LOG_DIR/yarn_install.log"
   
   echo_green ">> Building modal-login..."
-  yarn build | tee "$LOG_DIR/yarn_build.log"
+  yarn build > "$LOG_DIR/yarn_build.log" 2>&1
   
   echo_green ">> Running modal-login..."
   yarn start | tee "$LOG_DIR/yarn_start.log" &
