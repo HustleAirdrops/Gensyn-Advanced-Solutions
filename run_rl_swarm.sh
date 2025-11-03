@@ -147,10 +147,16 @@ ensure_modal_json() {
   LT_PID=$!
   sleep 3
 
-  TUNNEL_URL="$(grep -Eo 'https://[^ ]+' "$LOG_DIR/lt.log" | head -n1 || true)"
+  TUNNEL_URL=$(grep -Eo 'https://[a-zA-Z0-9.-]+\.loca\.lt' "$LOG_DIR/lt.log" | head -n1)
   IP="$(curl -4 -s ifconfig.me || echo 'your-IP')"
 
-  echo_blue  "   Open in browser: ${TUNNEL_URL:-<wait 3-10s and recheck lt.log>}"
+  if [[ -n "$TUNNEL_URL" ]]; then
+    echo_blue  "   Open in browser: ${TUNNEL_URL}"
+  else
+    echo_red   ">> Failed to create LocalTunnel."
+    echo_yellow ">> Please open manually: http://localhost:3000"
+  fi
+
   echo_blue  "   Password = your IP: $IP"
   echo_green "   Waiting for JSON files to appear..."
 
