@@ -119,6 +119,13 @@ disable_swap() {
     fi
 }
 
+copy_modal_files() {
+  local target="$HOME/rl-swarm/modal-login/temp-data"
+  mkdir -p "$target"
+  cp -n userApiKey.json userData.json "$target" 2>/dev/null || true
+  echo "✅ Files copied (if they existed) to $target"
+}
+
 # Modify run script
 modify_run_script() {
     local run_script="$SWARM_DIR/run_rl_swarm.sh"
@@ -448,6 +455,7 @@ run_node() {
             python3 -m venv .venv
             source .venv/bin/activate
             install_python_packages
+            copy_modal_files
             : "${PARTICIPATE_AI_MARKET:=Y}"
             while true; do
                 LOG_FILE="$SWARM_DIR/node.log"
@@ -475,6 +483,7 @@ EOF
             python3 -m venv .venv
             source .venv/bin/activate
             install_python_packages
+            copy_modal_files
             : "${PARTICIPATE_AI_MARKET:=Y}"
             LOG_FILE="$SWARM_DIR/node.log"
             : > "$LOG_FILE"
