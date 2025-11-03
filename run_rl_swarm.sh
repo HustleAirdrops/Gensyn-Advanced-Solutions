@@ -95,7 +95,7 @@ start_modal_login() {
 
   if ! need_cmd yarn; then
     echo_yel "Yarn not found - npm i -g yarn"
-    npm install -g yarn >/dev/null 2>&1
+    npm install -g yarn
   fi
 
   ENV_FILE="$ML_DIR/.env"
@@ -109,11 +109,14 @@ start_modal_login() {
     fi
   fi
 
-  yarn install --immutable        &> "$LOG_DIR/yarn_install.log"
+  echo_green ">> Running yarn install..."
+  yarn install --immutable | tee "$LOG_DIR/yarn_install.log"
+  
   echo_green ">> Building modal-login..."
-  yarn build                      &> "$LOG_DIR/yarn_build.log"
+  yarn build | tee "$LOG_DIR/yarn_build.log"
+  
   echo_green ">> Running modal-login..."
-  yarn start                      &> "$LOG_DIR/yarn_start.log" &
+  yarn start | tee "$LOG_DIR/yarn_start.log" &
   ML_PID=$!
   echo_green ">> modal-login PID: $ML_PID"
   
@@ -142,8 +145,8 @@ ensure_modal_json() {
   fi
 
   echo_green ">> Start localtunnel for login..."
-  npm install -g localtunnel >/dev/null 2>&1 || true
-  lt --port 3000 > "$LOG_DIR/lt.log" 2>&1 &
+  npm install -g localtunnel
+  lt --port 3000 | tee "$LOG_DIR/lt.log" &
   LT_PID=$!
   sleep 3
 
@@ -249,19 +252,14 @@ install_python_reqs() {
     sudo apt-get install -y python3-pip
   fi
   
-  if ! $PY -m pip install --upgrade pip 2>&1 | tee -a "$LOG_DIR/python_deps.log"; then
-    echo_red ">> Failed to upgrade pip!"
-    exit 1
-  fi
+  echo_green ">> Upgrading pip..."
+  $PY -m pip install --upgrade pip | tee -a "$LOG_DIR/python_deps.log"
   
-  if ! $PY -m pip install \
+  echo_green ">> Installing Python packages..."
+  $PY -m pip install \
     "gensyn-genrl==${GENRL_TAG}" \
     "reasoning-gym>=0.1.20" \
-    "git+https://github.com/gensyn-ai/hivemind@639c964a8019de63135a2594663b5bec8e5356dd" \
-    2>&1 | tee -a "$LOG_DIR/python_deps.log"; then
-    echo_red ">> Failed to install Python dependencies!"
-    exit 1
-  fi
+    "git+https://github.com/gensyn-ai/hivemind@639c964a8019de63135a2594663b5bec8e5356dd" | tee -a "$LOG_DIR/python_deps.log"
   
   echo_green ">> Python dependencies installed successfully."
 }
@@ -346,9 +344,10 @@ run_swarm_once() {
   : > "$SWARM_LOG"
   echo_green ">> Starting rl-swarm | log: $SWARM_LOG"
 
+  echo_green ">> Launching Python swarm..."
   python -u -m rgym_exp.runner.swarm_launcher \
     --config-path "$ROOT/rgym_exp/config" \
-    --config-name "rg-swarm.yaml" >> "$SWARM_LOG" 2>&1 &
+    --config-name "rg-swarm.yaml" | tee -a "$SWARM_LOG" &
   SWARM_PID=$!
   echo_green ">> rl-swarm PID: $SWARM_PID"
 
