@@ -144,23 +144,7 @@ ensure_modal_json() {
     return 0
   fi
 
-  echo_green ">> Start localtunnel for login..."
-  npm install -g localtunnel
-  lt --port 3000 | tee "$LOG_DIR/lt.log" &
-  LT_PID=$!
-  sleep 3
-
-  TUNNEL_URL=$(grep -Eo 'https://[a-zA-Z0-9.-]+\.loca\.lt' "$LOG_DIR/lt.log" | head -n1)
-  IP="$(curl -4 -s ifconfig.me || echo 'your-IP')"
-
-  if [[ -n "$TUNNEL_URL" ]]; then
-    echo_blue  "   Open in browser: ${TUNNEL_URL}"
-  else
-    echo_red   ">> Failed to create LocalTunnel."
-    echo_yellow ">> Please open manually: http://localhost:3000"
-  fi
-
-  echo_blue  "   Password = your IP: $IP"
+  echo_green ">> Please open http://localhost:3000 in your host browser and complete the login process."
   echo_green "   Waiting for JSON files to appear..."
 
   while [[ ! -f "$ML_TEMP/userData.json" || ! -f "$ML_TEMP/userApiKey.json" ]]; do
