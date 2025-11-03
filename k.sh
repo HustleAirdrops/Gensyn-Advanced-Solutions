@@ -103,7 +103,7 @@ install_deps() {
 # Swap Management
 manage_swap() {
     if [ ! -f "$SWAP_FILE" ]; then
-        sudo fallocate -l 15G "$SWAP_FILE" >/dev/null 2>&1
+        sudo fallocate -l 1G "$SWAP_FILE" >/dev/null 2>&1
         sudo chmod 600 "$SWAP_FILE" >/dev/null 2>&1
         sudo mkswap "$SWAP_FILE" >/dev/null 2>&1
         sudo swapon "$SWAP_FILE" >/dev/null 2>&1
@@ -111,12 +111,70 @@ manage_swap() {
     fi
 }
 
+
+install_unzip() {
+    if ! command -v unzip &> /dev/null; then
+        log "INFO" "⚠️ 'unzip' not found, installing..."
+        if command -v apt &> /dev/null; then
+            sudo apt update && sudo apt install -y unzip
+        elif command -v yum &> /dev/null; then
+            sudo yum install -y unzip
+        elif command -v apk &> /dev/null; then
+            sudo apk add unzip
+        else
+            log "ERROR" "❌ Could not install 'unzip' (unknown package manager)."
+            exit 1
+        fi
+    fi
+}
+# Unzip files from HOME (no validation)
+unzip_files() {
+    ZIP_FILE=$(find "$HOME" -maxdepth 1 -type f -name "*.zip" | head -n 1)
+   
+    if [ -n "$ZIP_FILE" ]; then
+        log "INFO" "📂 Found ZIP file: $ZIP_FILE, unzipping to $HOME ..."
+        install_unzip
+        unzip -o "$ZIP_FILE" -d "$HOME" >/dev/null 2>&1
+     
+        [ -f "$HOME/swarm.pem" ] && {
+            sudo mv "$HOME/swarm.pem" "$SWARM_DIR/swarm.pem"
+            sudo chmod 600 "$SWARM_DIR/swarm.pem"
+            JUST_EXTRACTED_PEM=true
+            log "INFO" "✅ Moved swarm.pem to $SWARM_DIR"
+        }
+        [ -f "$HOME/userData.json" ] && {
+            sudo mv "$HOME/userData.json" "$TEMP_DATA_DIR/"
+            log "INFO" "✅ Moved userData.json to $TEMP_DATA_DIR"
+        }
+        [ -f "$HOME/userApiKey.json" ] && {
+            sudo mv "$HOME/userApiKey.json" "$TEMP_DATA_DIR/"
+            log "INFO" "✅ Moved userApiKey.json to $TEMP_DATA_DIR"
+        }
+        ls -l "$HOME"
+        if [ -f "$SWARM_DIR/swarm.pem" ] || [ -f "$TEMP_DATA_DIR/userData.json" ] || [ -f "$TEMP_DATA_DIR/userApiKey.json" ]; then
+            log "INFO" "✅ Successfully extracted files from $ZIP_FILE"
+        else
+            log "WARN" "⚠️ No expected files (swarm.pem, userData.json, userApiKey.json) found in $ZIP_FILE"
+        fi
+    else
+        log "WARN" "⚠️ No ZIP file found in $HOME, proceeding without unzipping"
+    fi
+}
+
+
 disable_swap() {
     if [ -f "$SWAP_FILE" ]; then
         sudo swapoff "$SWAP_FILE"
         sudo rm -f "$SWAP_FILE"
         sudo sed -i "\|$SWAP_FILE|d" /etc/fstab
     fi
+}
+
+copy_modal_files() {
+  local target="$HOME/rl-swarm/modal-login/temp-data"
+  mkdir -p "$target"
+  cp -n userApiKey.json userData.json "$target" 2>/dev/null || true
+  echo "✅ Files copied (if they existed) to $target"
 }
 
 # Modify run script
@@ -356,6 +414,7 @@ install_node() {
         sudo cp "$HOME/swarm.pem" "$SWARM_DIR/swarm.pem"
         sudo chmod 600 "$SWARM_DIR/swarm.pem"
     fi
+    unzip_files
 
     echo -e "\n${GREEN}✅ Installation completed!${NC}"
     echo -e "Auto-login: ${GREEN}$([ "$KEEP_TEMP_DATA" == "true" ] && echo "ENABLED" || echo "DISABLED")${NC}"
@@ -383,6 +442,7 @@ run_node() {
             echo -e "${RED}swarm.pem not found in HOME directory. Proceeding without it...${NC}"
         fi
     fi
+    unzip_files
 
     if [ -f "$CONFIG_FILE" ]; then
         source "$CONFIG_FILE"
@@ -448,6 +508,7 @@ run_node() {
             python3 -m venv .venv
             source .venv/bin/activate
             install_python_packages
+            copy_modal_files
             : "${PARTICIPATE_AI_MARKET:=Y}"
             while true; do
                 LOG_FILE="$SWARM_DIR/node.log"
@@ -475,6 +536,7 @@ EOF
             python3 -m venv .venv
             source .venv/bin/activate
             install_python_packages
+            copy_modal_files
             : "${PARTICIPATE_AI_MARKET:=Y}"
             LOG_FILE="$SWARM_DIR/node.log"
             : > "$LOG_FILE"
