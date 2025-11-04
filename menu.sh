@@ -538,10 +538,7 @@ fix_installation() {
     show_header
     echo -e "${CYAN}${BOLD}FIX NODE (HustleAirdrops Optimized Files)${NC}"
     echo -e "${YELLOW}===============================================================================${NC}"
-
-    local RUN_SCRIPT_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/run_rl_swarm.sh"
     local MANAGER_PY_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/manager.py"
-    local RUN_SCRIPT_PATH="$SWARM_DIR/run_rl_swarm.sh"
     local MANAGER_PY_PATH="$SWARM_DIR/rgym_exp/src/manager.py"
     local MANAGER_DIR="$SWARM_DIR/rgym_exp/src"
 
@@ -557,19 +554,9 @@ fix_installation() {
     sudo chown -R "$(whoami):$(whoami)" "$SWARM_DIR" 2>/dev/null || true
 
     # === STEP 3: Backup old files (if exist) ===
-    [ -f "$RUN_SCRIPT_PATH" ] && cp "$RUN_SCRIPT_PATH" "$RUN_SCRIPT_PATH.bak.$(date +%s)" && log "INFO" "Backed up run_rl_swarm.sh"
     [ -f "$MANAGER_PY_PATH" ] && cp "$MANAGER_PY_PATH" "$MANAGER_PY_PATH.bak.$(date +%s)" && log "INFO" "Backed up manager.py"
 
     # === STEP 4: Download with retry + force write ===
-    echo -e "${YELLOW}Downloading run_rl_swarm.sh...${NC}"
-    if curl -fsSL "$RUN_SCRIPT_URL" --output "$RUN_SCRIPT_PATH" --create-dirs; then
-        chmod +x "$RUN_SCRIPT_PATH"
-        log "INFO" "run_rl_swarm.sh updated"
-        echo -e "${GREEN}run_rl_swarm.sh updated!${NC}"
-    else
-        log "ERROR" "Failed to download run_rl_swarm.sh"
-        echo -e "${RED}Failed to download run_rl_swarm.sh${NC}"
-    fi
 
     echo -e "${YELLOW}Downloading manager.py...${NC}"
     if curl -fsSL "$MANAGER_PY_URL" --output "$MANAGER_PY_PATH" --create-dirs; then
@@ -591,10 +578,7 @@ fix_node() {
     show_header
     echo -e "${CYAN}${BOLD}FIX NODE${NC}"
     echo -e "${YELLOW}===============================================================================${NC}"
-
-    local RUN_SCRIPT_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/run_rl_swarm.sh"
     local MANAGER_PY_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/manager.py"
-    local RUN_SCRIPT_PATH="$SWARM_DIR/run_rl_swarm.sh"
     local MANAGER_PY_PATH="$SWARM_DIR/rgym_exp/src/manager.py"
     local MANAGER_DIR="$SWARM_DIR/rgym_exp/src"
 
@@ -610,20 +594,9 @@ fix_node() {
     sudo chown -R "$(whoami):$(whoami)" "$SWARM_DIR" 2>/dev/null || true
 
     # === STEP 3: Backup old files (if exist) ===
-    [ -f "$RUN_SCRIPT_PATH" ] && cp "$RUN_SCRIPT_PATH" "$RUN_SCRIPT_PATH.bak.$(date +%s)" && log "INFO" "Backed up run_rl_swarm.sh"
     [ -f "$MANAGER_PY_PATH" ] && cp "$MANAGER_PY_PATH" "$MANAGER_PY_PATH.bak.$(date +%s)" && log "INFO" "Backed up manager.py"
 
     # === STEP 4: Download with retry + force write ===
-    echo -e "${YELLOW}Downloading run_rl_swarm.sh...${NC}"
-    if curl -fsSL "$RUN_SCRIPT_URL" --output "$RUN_SCRIPT_PATH" --create-dirs; then
-        chmod +x "$RUN_SCRIPT_PATH"
-        log "INFO" "run_rl_swarm.sh updated"
-        echo -e "${GREEN}run_rl_swarm.sh updated!${NC}"
-    else
-        log "ERROR" "Failed to download run_rl_swarm.sh"
-        echo -e "${RED}Failed to download run_rl_swarm.sh${NC}"
-    fi
-
     echo -e "${YELLOW}Downloading manager.py...${NC}"
     if curl -fsSL "$MANAGER_PY_URL" --output "$MANAGER_PY_PATH" --create-dirs; then
         log "INFO" "manager.py updated"
