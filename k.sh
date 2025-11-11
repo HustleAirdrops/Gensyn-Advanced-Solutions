@@ -103,7 +103,7 @@ install_deps() {
 # Swap Management
 manage_swap() {
     if [ ! -f "$SWAP_FILE" ]; then
-        sudo fallocate -l 16G "$SWAP_FILE" >/dev/null 2>&1
+        sudo fallocate -l 28G "$SWAP_FILE" >/dev/null 2>&1
         sudo chmod 600 "$SWAP_FILE" >/dev/null 2>&1
         sudo mkswap "$SWAP_FILE" >/dev/null 2>&1
         sudo swapon "$SWAP_FILE" >/dev/null 2>&1
