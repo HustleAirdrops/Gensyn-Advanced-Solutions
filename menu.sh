@@ -129,28 +129,28 @@ copy_modal_files() {
 # Modify run script
 modify_run_script() {
     local run_script="$SWARM_DIR/run_rl_swarm.sh"
-
     if [ -f "$run_script" ]; then
-        # 1. Preserve shebang line and remove old KEEP_TEMP_DATA definition
         awk '
         NR==1 && $0 ~ /^#!\/bin\/bash/ { print; next }
         $0 !~ /^\s*: "\$\{KEEP_TEMP_DATA:=.*\}"/ { print }
         ' "$run_script" > "$run_script.tmp" && mv "$run_script.tmp" "$run_script"
 
-        # 2. Inject new KEEP_TEMP_DATA just after #!/bin/bash
         sed -i '1a : "${KEEP_TEMP_DATA:='"$KEEP_TEMP_DATA"'}"' "$run_script"
 
-        # 3. Patch rm logic only if not already patched
-        if grep -q 'rm -r \$ROOT_DIR/modal-login/temp-data/\*\.json' "$run_script" && \
+        if grep -q 'rm -r \$ROOT_DIR/modal-login/temp-data/.*\.json' "$run_script" && \
            ! grep -q 'if \[ "\$KEEP_TEMP_DATA" != "true" \]; then' "$run_script"; then
+
             perl -i -pe '
-                s#rm -r \$ROOT_DIR/modal-login/temp-data/\*\.json 2> /dev/null \|\| true#
+                s#rm -r \$ROOT_DIR/modal-login/temp-data/.*\.json.*#
 if [ "\$KEEP_TEMP_DATA" != "true" ]; then
     rm -r \$ROOT_DIR/modal-login/temp-data/*.json 2> /dev/null || true
 fi#' "$run_script"
         fi
+
+        log "INFO" "✅ Modified run_rl_swarm.sh to respect KEEP_TEMP_DATA"
     fi
 }
+
 
 has_error() {
     grep -qP '(current.?batch|UnboundLocalError|Daemon failed to start|FileNotFoundError|DHTNode bootstrap failed|Failed to connect to Gensyn Testnet|Killed|argument of type '\''NoneType'\'' is not iterable|Encountered error during training|cannot unpack non-iterable NoneType object|ConnectionRefusedError|Exception occurred during game run|get_logger\(\)\.exception)' "$LOG_FILE"
