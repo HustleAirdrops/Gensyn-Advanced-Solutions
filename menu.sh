@@ -244,7 +244,7 @@ change_config() {
     echo -e "\n${CYAN}${BOLD}🧠 Model Selection:${NC}"
     echo -e "${YELLOW}-------------------------------------------------${NC}"
     printf "${BOLD}%-3s %-40s${NC}\n" "0." "None (default, assigned by hardware)"
-    printf "${BOLD}%-3s %-40s${NC}\n" "1." "Qwen2.5-Coder-1.5B-Instruct"
+    printf "${BOLD}%-3s %-40s${NC}\n" "1." "Qwen2.5-Coder-0.5B-Instruct"
     printf "${BOLD}%-3s %-40s${NC}\n" "2." "Qwen2.5-Coder-1.5B-Instruct"
     printf "${BOLD}%-3s %-40s${NC}\n" "3." "Custom model"
     echo -e "${YELLOW}-------------------------------------------------${NC}"
