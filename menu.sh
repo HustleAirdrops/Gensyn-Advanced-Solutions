@@ -244,24 +244,18 @@ change_config() {
     echo -e "\n${CYAN}${BOLD}🧠 Model Selection:${NC}"
     echo -e "${YELLOW}-------------------------------------------------${NC}"
     printf "${BOLD}%-3s %-40s${NC}\n" "0." "None (default, assigned by hardware)"
-    printf "${BOLD}%-3s %-40s${NC}\n" "1." "Gensyn/Qwen2.5-0.5B-Instruct"
-    printf "${BOLD}%-3s %-40s${NC}\n" "2." "Qwen/Qwen3-0.6B"
-    printf "${BOLD}%-3s %-40s${NC}\n" "3." "nvidia/AceInstruct-1.5B"
-    printf "${BOLD}%-3s %-40s${NC}\n" "4." "dnotitia/Smoothie-Qwen3-1.7B"
-    printf "${BOLD}%-3s %-40s${NC}\n" "5." "Gensyn/Qwen2.5-1.5B-Instruct"
-    printf "${BOLD}%-3s %-40s${NC}\n" "6." "Custom model"
+    printf "${BOLD}%-3s %-40s${NC}\n" "1." "Qwen2.5-Coder-1.5B-Instruct"
+    printf "${BOLD}%-3s %-40s${NC}\n" "2." "Qwen2.5-Coder-1.5B-Instruct"
+    printf "${BOLD}%-3s %-40s${NC}\n" "3." "Custom model"
     echo -e "${YELLOW}-------------------------------------------------${NC}"
-    read -p "$(echo -e "${BOLD}Choose model [0-6] (Enter = keep current: ${MODEL_NAME:-None}): ${NC}")" model_choice
+    read -p "$(echo -e "${BOLD}Choose model [0-3] (Enter = keep current: ${MODEL_NAME:-None}): ${NC}")" model_choice
 
     if [ -n "$model_choice" ]; then
         case $model_choice in
             0) MODEL_NAME="" ;;
-            1) MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct" ;;
-            2) MODEL_NAME="Qwen/Qwen3-0.6B" ;;
-            3) MODEL_NAME="nvidia/AceInstruct-1.5B" ;;
-            4) MODEL_NAME="dnotitia/Smoothie-Qwen3-1.7B" ;;
-            5) MODEL_NAME="Gensyn/Qwen2.5-1.5B-Instruct" ;;
-            6) read -p "Enter custom model (repo/name): " MODEL_NAME ;;
+            1) MODEL_NAME="Qwen2.5-Coder-0.5B-Instruct" ;;
+            2) MODEL_NAME="Qwen2.5-Coder-1.5B-Instruct" ;;
+            3) read -p "Enter custom model (repo/name): " MODEL_NAME ;;
             *) echo -e "${RED}❌ Invalid choice. Keeping current config.${NC}"; MODEL_NAME="${MODEL_NAME:-}" ;;
         esac
         sed -i "s|^MODEL_NAME=.*|MODEL_NAME=$MODEL_NAME|" "$CONFIG_FILE"
@@ -408,24 +402,18 @@ run_node() {
     echo -e "${CYAN}${BOLD}🧠 Model Selection:${NC}"
     echo -e "${YELLOW}-------------------------------------------------${NC}"
     printf "${BOLD}%-3s %-40s${NC}\n" "0." "None (default, assigned by hardware)"
-    printf "${BOLD}%-3s %-40s${NC}\n" "1." "Gensyn/Qwen2.5-0.5B-Instruct"
-    printf "${BOLD}%-3s %-40s${NC}\n" "2." "Qwen/Qwen3-0.6B"
-    printf "${BOLD}%-3s %-40s${NC}\n" "3." "nvidia/AceInstruct-1.5B"
-    printf "${BOLD}%-3s %-40s${NC}\n" "4." "dnotitia/Smoothie-Qwen3-1.7B"
-    printf "${BOLD}%-3s %-40s${NC}\n" "5." "Gensyn/Qwen2.5-1.5B-Instruct"
-    printf "${BOLD}%-3s %-40s${NC}\n" "6." "Custom model"
+    printf "${BOLD}%-3s %-40s${NC}\n" "1." "Qwen2.5-Coder-0.5B-Instruct"
+    printf "${BOLD}%-3s %-40s${NC}\n" "2." "Qwen2.5-Coder-1.5B-Instruct"
+    printf "${BOLD}%-3s %-40s${NC}\n" "3." "Custom model"
     echo -e "${YELLOW}-------------------------------------------------${NC}"
-    read -p "$(echo -e "${BOLD}Choose model [0-6] (Enter = keep current: ${MODEL_NAME:-None}): ${NC}")" model_choice
+    read -p "$(echo -e "${BOLD}Choose model [0-3] (Enter = keep current: ${MODEL_NAME:-None}): ${NC}")" model_choice
 
     if [ -n "$model_choice" ]; then
         case $model_choice in
             0) MODEL_NAME="" ;;
-            1) MODEL_NAME="Gensyn/Qwen2.5-0.5B-Instruct" ;;
-            2) MODEL_NAME="Qwen/Qwen3-0.6B" ;;
-            3) MODEL_NAME="nvidia/AceInstruct-1.5B" ;;
-            4) MODEL_NAME="dnotitia/Smoothie-Qwen3-1.7B" ;;
-            5) MODEL_NAME="Gensyn/Qwen2.5-1.5B-Instruct" ;;
-            6) read -p "Enter custom model (repo/name): " MODEL_NAME ;;
+            1) MODEL_NAME="Qwen2.5-Coder-0.5B-Instruct" ;;
+            2) MODEL_NAME="Qwen2.5-Coder-1.5B-Instruct" ;;
+            3) read -p "Enter custom model (repo/name): " MODEL_NAME ;;
             *) echo -e "${RED}❌ Invalid choice. Using current config.${NC}"; MODEL_NAME="${MODEL_NAME:-}" ;;
         esac
         sed -i "s|^MODEL_NAME=.*|MODEL_NAME=$MODEL_NAME|" "$CONFIG_FILE"
