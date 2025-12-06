@@ -595,8 +595,8 @@ fix_installation() {
     local RUN_SCRIPT_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/run_rl_swarm.sh"
     local MANAGER_PY_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/manager.py"
     local RUN_SCRIPT_PATH="$SWARM_DIR/run_rl_swarm.sh"
-    local MANAGER_PY_PATH="$SWARM_DIR/rgym_exp/src/manager.py"
-    local MANAGER_DIR="$SWARM_DIR/rgym_exp/src"
+    local MANAGER_PY_PATH="$SWARM_DIR/code_gen_exp/src/manager.py"
+    local MANAGER_DIR="$SWARM_DIR/code_gen_exp/src"
 
     # === STEP 1: Ensure SWARM_DIR exists ===
     if [ ! -d "$SWARM_DIR" ]; then
@@ -648,8 +648,8 @@ fix_node() {
     local RUN_SCRIPT_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/run_rl_swarm.sh"
     local MANAGER_PY_URL="https://raw.githubusercontent.com/HustleAirdrops/Gensyn-Advanced-Solutions/main/manager.py"
     local RUN_SCRIPT_PATH="$SWARM_DIR/run_rl_swarm.sh"
-    local MANAGER_PY_PATH="$SWARM_DIR/rgym_exp/src/manager.py"
-    local MANAGER_DIR="$SWARM_DIR/rgym_exp/src"
+    local MANAGER_PY_PATH="$SWARM_DIR/code_gen_exp/src/manager.py"
+    local MANAGER_DIR="$SWARM_DIR/code_gen_exp/src"
 
     # === STEP 1: Ensure SWARM_DIR exists ===
     if [ ! -d "$SWARM_DIR" ]; then
